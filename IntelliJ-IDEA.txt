@@ -1,0 +1,10 @@
+Enable "Save Actions"
+---------------------
+
+ - Fixes up source code on save
+ - I use git on the command line (exclusively) so I lose these features
+   which are normally run on git commit via the IDE
+
+ https://plugins.jetbrains.com/plugin/7642-save-actions
+
+
