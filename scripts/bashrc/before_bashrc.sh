@@ -35,11 +35,12 @@ alias co="git checkout"
 alias b="git branch"
 alias merge="git merge"
 
+# Shortcut to get the current AWS_PROFILE
 getaws() {
     echo "Using AWS profile: $AWS_PROFILE"
 }
 
-# Given $1 as an AWS environemnt,
+# Given $1 as an AWS environment,
 # configure the corresponding AWS_PROFILE
 chaws() {
   # Remove env vars, if set
@@ -61,7 +62,7 @@ chaws() {
   fi
 }
 
-# Default to integration AWS creds
+# Default to dev AWS creds
 chaws i true
 
 ftxt() {
