@@ -1,0 +1,4 @@
+GIT Aware Prompt
+----------------
+https://github.com/magicmonty/bash-git-prompt
+ - Clone to ~/Development/Tools
