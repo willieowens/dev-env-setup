@@ -1,0 +1,10 @@
+#!/bin/bash
+
+cat ~/.gradle/gradle.properties | grep "^local" > /dev/null 2>&1
+
+if [ $? -eq 0 ]; then
+    echo true
+else
+    echo false
+fi
+

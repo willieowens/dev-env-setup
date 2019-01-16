@@ -1,0 +1,99 @@
+allprojects {
+  
+  repositories {
+  
+    mavenLocal()
+  
+  }
+  
+  buildscript {
+   
+    repositories {
+  
+    }
+
+  }
+  
+  // Define a default isDevBuild() function usable within the context of every project
+  // You may override this function in any given project with your own implementation via
+  // "def isDevBuild() { <custom-implementation> }"
+  ext.isDevBuild = {
+    return !project.hasProperty('prod');
+  }
+  
+  // The early bird gets the worm, but the lazy worm makes a script
+  afterEvaluate {
+    version = version.toString() + ".0"    // append a "build number" so that when you run "gradle install"
+                                // it install a <major>.<minor>.<buildNumber> format version
+                                // which is picked up by our <major>.<minor>.+ dependency specs
+    /**
+     * Use local (<major>.<minor>.0-versioned) jars for dependency resolution and local maven installation
+     */
+    if (project.hasProperty('local')) {
+      // Set local dependency versions to <major>.<minor>.0,
+      // as defined by INTERNAL_LOCAL_DEP_OVERRIDES in ~/.gradle/gradle.properties
+      configurations.all {
+        resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+          def artifactId = details.getRequested().getName();
+          def groupName = details.getRequested().getGroup() + ":" + details.getRequested().getName();
+          def useLocal = false;
+          def hasOverrideProp = project.hasProperty('INTERNAL_LOCAL_DEP_OVERRIDES');
+          def useOverrideProp = hasOverrideProp && INTERNAL_LOCAL_DEP_OVERRIDES;
+          if (useOverrideProp) {
+            def artifactIdList = INTERNAL_LOCAL_DEP_OVERRIDES.split('\\|')
+            if (artifactIdList.contains(artifactId)) {
+                println "[!] INTERNAL_LOCAL_DEP_OVERRIDES includes ${artifactId}, updating to a local, <major>.<minor>.0 version, dependency"
+                useLocal = true;
+            }
+          } else if (details.getRequested().getGroup().startsWith('com.company')) { // TODO update with a configuration var
+            println "[!] INTERNAL_LOCAL_DEP_OVERRIDES is empty. Updating ${groupName} to a local, <major>.<minor>.0 version, dependency"
+            useLocal = true;
+          }
+          if (useLocal) {
+            def curVersion = details.getRequested().getVersion();
+            // Get second indexOf '.' character to ultimately extract "<major>.<minor>."
+            def curVersionBase = curVersion.substring(0, curVersion.indexOf('.', curVersion.indexOf('.') + 1) + 1);
+            def newVersion = curVersionBase + '0';
+            println "[!] Updating ${groupName}:${curVersion} to ${newVersion}";
+            details.useVersion newVersion;
+          } //else { println "[!] Leaving ${groupName} alone"; }
+        }
+      }
+    }
+  }
+  
+  // New task which will replace all split repo project jar dependencies with
+  // eclipse project dependencies
+  // NOTE - The eclipseDeps tasks takes care of all eclipse functions. There is no need
+  //          to call 'gradle eclipse' if you are using 'gradle eclipseDeps' instead.
+  //        Furthermore, you actually cannot call both of these tasks in the same execution,
+  //          (ie. you cannot call 'gradle eclipse eclipseDeps') due to the implementation
+  //          of the eclipse plugin. But again, no need to call both - use one or the other.
+  task eclipseDeps doLast { task ->
+  
+     // Only attempt to edit eclipse classpath if the eclipse plugin has been applied
+     // and the eclipse task was not overridden by custom code (ie. play projects)
+     if (it.hasProperty('eclipse') && eclipse.hasProperty('classpath')) {
+  
+        eclipse.classpath.file.withXml {
+           def iter = it.asNode().iterator()
+           while (iter.hasNext()) {
+              def node = iter.next()
+              def nodeText = node.toString()
+              if (nodeText.contains("com.company") || nodeText.contains("com/company")) { // TODO replace w/ configuration var
+                 // extract the eclipse project name from the jar filename, before the version info
+                 def eclipseProject = node.attribute('path').find(/\w+(-\w+)*(?=-\d+(\.\d+)*(\.\w+)?\.jar)/)
+                 println("[!] Replacing jar dependency with eclipse project for $eclipseProject")
+                 node.attributes().clear()
+                 node.attributes().putAll([kind: 'src', path: "/${eclipseProject}"])
+              }
+           }
+        }
+  
+        tasks.eclipseClasspath.execute()
+        tasks.eclipseProject.execute()
+        tasks.eclipseJdt.execute()
+  
+     }
+  }
+}

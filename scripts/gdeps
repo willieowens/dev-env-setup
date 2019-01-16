@@ -1,0 +1,9 @@
+#!/bin/bash
+
+CONFIGURATION=compile
+
+if [ -n "$1" ]; then
+  CONFIGURATION="$1"
+fi
+
+gw dependencies --configuration $CONFIGURATION | less

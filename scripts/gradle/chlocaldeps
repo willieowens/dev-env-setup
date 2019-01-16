@@ -1,0 +1,9 @@
+#!/bin/bash
+
+PROJECTS=""
+for project in "$@"; do
+  PROJECTS+="${project}|"
+done
+
+sed -i 's/^#INTERNAL_LOCAL_DEP_OVERRIDES/INTERNAL_LOCAL_DEP_OVERRIDES/1' ~/.gradle/gradle.properties
+sed -i "s/^INTERNAL_LOCAL_DEP_OVERRIDES=.*/INTERNAL_LOCAL_DEP_OVERRIDES=${PROJECTS}/1" ~/.gradle/gradle.properties

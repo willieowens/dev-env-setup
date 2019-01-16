@@ -1,0 +1,9 @@
+#!/bin/bash
+
+set -x
+
+START_LINE=$1
+END_LINE=$2
+FILE=$3
+
+eval sed \'${START}','${END}'!d'\' ${FILE}

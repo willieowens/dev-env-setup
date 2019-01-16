@@ -1,0 +1,19 @@
+#!/bin/bash
+
+function printUsage() {
+  echo "This script is used to comment in/out the local gradle property in ~/.gradle/gradle.properties"
+  echo "Usage: chlocal true|false"
+  exit 1
+}
+
+if [ -z "$1" ]; then
+  printUsage;
+fi
+
+if $1; then
+  sed -i 's/#local/local/1' ~/.gradle/gradle.properties
+else
+  sed -i 's/^local/#local/1' ~/.gradle/gradle.properties
+fi
+
+echo "[Success] Updated local gradle property to $1"

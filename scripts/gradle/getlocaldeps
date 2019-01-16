@@ -1,0 +1,3 @@
+#!/bin/bash
+
+cat ~/.gradle/gradle.properties | grep "^INTERNAL_LOCAL_DEP_OVERRIDES"

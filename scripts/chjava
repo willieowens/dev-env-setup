@@ -1,0 +1,13 @@
+#!/bin/bash
+
+version=$1
+
+jdk=`ls /opt | grep jdk1.$version | head -1`
+
+if [ -z "$jdk" ]; then
+  echo "Unsupported Java version, $jdk"
+  exit 1
+fi
+
+unlink /opt/java
+ln -s /opt/$jdk /opt/java

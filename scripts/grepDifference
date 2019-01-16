@@ -1,0 +1,2 @@
+#files in $2 not in $1
+grep -Fxv -f $1 $2
